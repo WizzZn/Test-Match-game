@@ -26,11 +26,33 @@ public class GameManager : MonoBehaviour
     }
     void Start()
     {
-        GetButtons();
-        addListener();
+         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            btns.Add(buttons[i].GetComponent<Button>());
+            btns[i].image.sprite = bgSprite;
+        }
         AddGameCards();
         grid.constraintCount = gridRow;
         gameGusses = gamepuzzle.Count / 2;
+        ShuffleCards(gamepuzzle);
+        StartCoroutine(CardShowing());
+    }
+    IEnumerator CardShowing()
+    {
+        yield return new WaitForSeconds(1f);
+         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
+        for (int i = 0; i < buttons.Length; i++)
+        {
+           // btns.Add(buttons[i].GetComponent<Button>());
+            btns[i].image.sprite = gamepuzzle[i];
+        }
+
+        yield return new WaitForSeconds(3f);
+        GetButtons();
+        addListener();
+
+
     }
 
     // Update is called once per frame
@@ -56,7 +78,7 @@ public class GameManager : MonoBehaviour
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-            btns.Add(buttons[i].GetComponent<Button>());
+           // btns.Add(buttons[i].GetComponent<Button>());
             btns[i].image.sprite = bgSprite;
         }
 
@@ -95,12 +117,12 @@ public class GameManager : MonoBehaviour
                     countCorrectGuesses++;
                     btns[firstGuessIntex].interactable = false;
                     btns[secondGuessIntex].interactable = false;
-                   // comboFoundCheck();
-                   /* if (comboFound == false)
+                    comboFoundCheck();
+                    if (comboFound == false)
                     {
                         comboFound = true;
 
-                    }*/
+                    }
 
                 }
                 else
@@ -108,11 +130,10 @@ public class GameManager : MonoBehaviour
                     yield return new WaitForSeconds(1f);
 
                     Debug.Log("Not a match, try again.");
-                    //comboFound = false;
-                    //comboFoundCheck();
+                    comboFound = false;
+                    comboFoundCheck();
                 }
-                firstTry = false;
-                secondTry = false;
+                firstTry = secondTry = false;
                 btns[firstGuessIntex].image.sprite = bgSprite;
                 btns[secondGuessIntex].image.sprite = bgSprite;
                 checkguesses();
@@ -131,10 +152,9 @@ public class GameManager : MonoBehaviour
         if (countCorrectGuesses == gameGusses)
         {
             Debug.Log("You win!");
-            // Here you can add logic to reset the game or show a win message
         }
     }
-    /*void comboFoundCheck()
+    void comboFoundCheck()
     {
         if (comboFound)
         {
@@ -146,6 +166,16 @@ public class GameManager : MonoBehaviour
             comboCount = 0;
             Debug.Log("No combo found, reset count." + comboCount);
         }
-      
-    }*/
+
+    }
+    void ShuffleCards(List<Sprite> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            Sprite temp = gamepuzzle[i];
+            int randomIndex = Random.Range(i, list.Count);
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+        }
+    }
 }
