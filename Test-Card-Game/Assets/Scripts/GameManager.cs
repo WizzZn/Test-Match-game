@@ -2,31 +2,47 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
+using System.Runtime.InteropServices;
 
 public class GameManager : MonoBehaviour
 {
     [SerializeField] GridLayoutGroup grid;
     [SerializeField] int gridRow;
 
+    public static GameManager instance;
     public Sprite[] puzzle;
     public List<Sprite> gamepuzzle = new List<Sprite>();
     public List<Button> btns = new List<Button>();
+    public int countCorrectGuesses;
+    public int totalScores;
 
     private bool firstTry, secondTry;
     private bool comboFound;
     private int comboCount;
-    private int countGuesses, countCorrectGuesses, gameGusses;
+    private int countGuesses, gameGusses;
     private int firstGuessIntex, secondGuessIntex;
     private string firstGussePuzzle, secondGussePuzzle;
     [SerializeField] private Sprite bgSprite;
+    [SerializeField] TextMeshProUGUI scoreText;
+    [SerializeField] TextMeshProUGUI comboText;
+    [SerializeField] TextMeshProUGUI chanceText;
+
     // Start is called before the first frame update
     private void Awake()
     {
+        totalScores = GameData.instance.score;
+        if (instance == null)
+        {
+            instance = this;
+        }
+
         puzzle = Resources.LoadAll<Sprite>("Sprites/Die");
     }
     void Start()
     {
-         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
+        GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
             btns.Add(buttons[i].GetComponent<Button>());
@@ -41,14 +57,14 @@ public class GameManager : MonoBehaviour
     IEnumerator CardShowing()
     {
         yield return new WaitForSeconds(1f);
-         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
+        GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-           // btns.Add(buttons[i].GetComponent<Button>());
+            // btns.Add(buttons[i].GetComponent<Button>());
             btns[i].image.sprite = gamepuzzle[i];
         }
 
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(2f);
         GetButtons();
         addListener();
 
@@ -58,6 +74,12 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        scoreText.text = "Score:\n" + totalScores;
+        comboText.text = "Combo:\n" + comboCount;
+        chanceText.text = "Chance:\n" + (gameGusses + 2) + "/" + (gameGusses + 2 - countGuesses); 
+
+        chance();
+
     }
     void AddGameCards()
     {
@@ -78,7 +100,7 @@ public class GameManager : MonoBehaviour
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-           // btns.Add(buttons[i].GetComponent<Button>());
+            // btns.Add(buttons[i].GetComponent<Button>());
             btns[i].image.sprite = bgSprite;
         }
 
@@ -98,7 +120,7 @@ public class GameManager : MonoBehaviour
             secondGuessIntex = int.Parse(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.name);
             secondGussePuzzle = gamepuzzle[secondGuessIntex].name;
             btns[secondGuessIntex].image.sprite = gamepuzzle[secondGuessIntex];
-            countGuesses++;
+            
 
             if (firstGuessIntex == secondGuessIntex)
             {
@@ -115,6 +137,9 @@ public class GameManager : MonoBehaviour
                 {
                     Debug.Log("You found a match!");
                     countCorrectGuesses++;
+                    totalScores += 10; 
+                    countGuesses++;
+                    GameData.instance.score = totalScores;
                     btns[firstGuessIntex].interactable = false;
                     btns[secondGuessIntex].interactable = false;
                     comboFoundCheck();
@@ -130,6 +155,7 @@ public class GameManager : MonoBehaviour
                     yield return new WaitForSeconds(1f);
 
                     Debug.Log("Not a match, try again.");
+                    countGuesses++;
                     comboFound = false;
                     comboFoundCheck();
                 }
@@ -152,6 +178,10 @@ public class GameManager : MonoBehaviour
         if (countCorrectGuesses == gameGusses)
         {
             Debug.Log("You win!");
+            GameData.instance.level = SceneManager.GetActiveScene().buildIndex + 1;
+            GameData.instance.score = countCorrectGuesses;
+            GameData.instance.SaveData();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
     }
     void comboFoundCheck()
@@ -178,4 +208,18 @@ public class GameManager : MonoBehaviour
             list[randomIndex] = temp;
         }
     }
+    void chance()
+    {
+        if (countGuesses >= (gameGusses +2))
+        {
+            countGuesses = 0;
+            Debug.Log("You have used all your chances, try again.");
+            foreach (Button butn in btns)
+            {
+                butn.interactable = false;
+            }
+            
+        }
+    }
+   
 }
