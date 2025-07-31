@@ -10,6 +10,15 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] GridLayoutGroup grid;
     [SerializeField] int gridRow;
+    [SerializeField] private Sprite bgSprite;
+    [SerializeField] TextMeshProUGUI scoreText;
+    [SerializeField] TextMeshProUGUI comboText;
+    [SerializeField] TextMeshProUGUI chanceText;
+    [SerializeField] AudioClip correctSFX;
+    [SerializeField] AudioClip flipSFX;
+    [SerializeField] AudioClip wrrongSFX;
+    [SerializeField] AudioClip winSFX;
+    [SerializeField] AudioClip gameOverSFX;
 
     public static GameManager instance;
     public Sprite[] puzzle;
@@ -17,39 +26,41 @@ public class GameManager : MonoBehaviour
     public List<Button> btns = new List<Button>();
     public int countCorrectGuesses;
     public int totalScores;
+    public GameObject gameOverPanel;
 
+    private AudioSource audioSource;
     private bool firstTry, secondTry;
     private bool comboFound;
     private int comboCount;
     private int countGuesses, gameGusses;
     private int firstGuessIntex, secondGuessIntex;
     private string firstGussePuzzle, secondGussePuzzle;
-    [SerializeField] private Sprite bgSprite;
-    [SerializeField] TextMeshProUGUI scoreText;
-    [SerializeField] TextMeshProUGUI comboText;
-    [SerializeField] TextMeshProUGUI chanceText;
+    private bool winbool;
+   
 
     // Start is called before the first frame update
     private void Awake()
     {
         totalScores = GameData.instance.score;
+        SAVE();
         if (instance == null)
         {
             instance = this;
         }
-
+        audioSource = GameObject.FindGameObjectWithTag("Music").GetComponent<AudioSource>();
         puzzle = Resources.LoadAll<Sprite>("Sprites/Die");
     }
     void Start()
     {
+        grid.constraintCount = gridRow;
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
             btns.Add(buttons[i].GetComponent<Button>());
             btns[i].image.sprite = bgSprite;
         }
+        winbool = false;
         AddGameCards();
-        grid.constraintCount = gridRow;
         gameGusses = gamepuzzle.Count / 2;
         ShuffleCards(gamepuzzle);
         StartCoroutine(CardShowing());
@@ -60,8 +71,9 @@ public class GameManager : MonoBehaviour
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-            // btns.Add(buttons[i].GetComponent<Button>());
             btns[i].image.sprite = gamepuzzle[i];
+            audioSource.clip = flipSFX;
+            audioSource.Play();
         }
 
         yield return new WaitForSeconds(2f);
@@ -78,8 +90,10 @@ public class GameManager : MonoBehaviour
         comboText.text = "Combo:\n" + comboCount;
         chanceText.text = "Chance:\n" + (gameGusses + 2) + "/" + (gameGusses + 2 - countGuesses); 
 
+    }
+    private void LateUpdate()
+    {
         chance();
-
     }
     void AddGameCards()
     {
@@ -100,8 +114,9 @@ public class GameManager : MonoBehaviour
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-            // btns.Add(buttons[i].GetComponent<Button>());
             btns[i].image.sprite = bgSprite;
+            audioSource.clip = flipSFX;
+            audioSource.Play();
         }
 
     }
@@ -112,6 +127,8 @@ public class GameManager : MonoBehaviour
             firstTry = true;
             firstGuessIntex = int.Parse(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.name);
             firstGussePuzzle = gamepuzzle[firstGuessIntex].name;
+            audioSource.clip = flipSFX;
+            audioSource.Play();
             btns[firstGuessIntex].image.sprite = gamepuzzle[firstGuessIntex];
         }
         else if (!secondTry)
@@ -119,13 +136,17 @@ public class GameManager : MonoBehaviour
             secondTry = true;
             secondGuessIntex = int.Parse(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.name);
             secondGussePuzzle = gamepuzzle[secondGuessIntex].name;
+            audioSource.clip = flipSFX;
+            audioSource.Play();
             btns[secondGuessIntex].image.sprite = gamepuzzle[secondGuessIntex];
-            
+
 
             if (firstGuessIntex == secondGuessIntex)
             {
                 Debug.Log("You can't pick the same card twice");
                 secondTry = false;
+                audioSource.clip = wrrongSFX;
+                audioSource.Play();
                 return;
             }
             StartCoroutine(CardsChecking());
@@ -139,7 +160,8 @@ public class GameManager : MonoBehaviour
                     countCorrectGuesses++;
                     totalScores += 10; 
                     countGuesses++;
-                    GameData.instance.score = totalScores;
+                    audioSource.clip = correctSFX;
+                    audioSource.Play();
                     btns[firstGuessIntex].interactable = false;
                     btns[secondGuessIntex].interactable = false;
                     comboFoundCheck();
@@ -157,6 +179,8 @@ public class GameManager : MonoBehaviour
                     Debug.Log("Not a match, try again.");
                     countGuesses++;
                     comboFound = false;
+                    audioSource.clip = wrrongSFX;
+                    audioSource.Play();
                     comboFoundCheck();
                 }
                 firstTry = secondTry = false;
@@ -177,10 +201,11 @@ public class GameManager : MonoBehaviour
     {
         if (countCorrectGuesses == gameGusses)
         {
+            winbool = true;
             Debug.Log("You win!");
-            GameData.instance.level = SceneManager.GetActiveScene().buildIndex + 1;
-            GameData.instance.score = countCorrectGuesses;
-            GameData.instance.SaveData();
+            SAVE();
+            audioSource.clip = winSFX;
+            audioSource.Play();
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
     }
@@ -210,16 +235,32 @@ public class GameManager : MonoBehaviour
     }
     void chance()
     {
-        if (countGuesses >= (gameGusses +2))
+        if (countGuesses >= (gameGusses +2) && winbool == false)
         {
             countGuesses = 0;
             Debug.Log("You have used all your chances, try again.");
             foreach (Button butn in btns)
             {
                 butn.interactable = false;
+                audioSource.clip = gameOverSFX;
+                audioSource.Play();
+                StartCoroutine(GameOver());
             }
             
         }
+    }
+    IEnumerator GameOver()
+    {
+        yield return new WaitForSeconds(2f);
+        gameOverPanel.SetActive(true); 
+
+    }
+    void SAVE()
+    {
+        GameData.instance.level = SceneManager.GetActiveScene().buildIndex;
+        GameData.instance.score = totalScores;
+        GameData.instance.SaveData();
+        Debug.Log($"Game Saved");
     }
    
 }

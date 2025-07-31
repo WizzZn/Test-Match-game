@@ -32,8 +32,8 @@ public class GameData : MonoBehaviour
 
     public void LoadData()
     {
-        level = PlayerPrefs.GetInt("Level");   
-        score = PlayerPrefs.GetInt("Score");   
+        level = PlayerPrefs.GetInt("Level",0);   
+        score = PlayerPrefs.GetInt("Score",0);   
         Debug.Log("Data Loaded: Level = "+ level +" Score =" +score);
     }
 
@@ -46,22 +46,7 @@ public class GameData : MonoBehaviour
         PlayerPrefs.Save();
        
     }
+   
 
-    public void NewGame()
-    {
-        ClearData();
-        SceneManager.LoadScene(1); 
-    }
 
-    public void LoadGame()
-    {
-        LoadData();
-        SceneManager.LoadScene(level); // Load saved scene
-    }
-
-    public void Quit()
-    {
-        Application.Quit();
-        Debug.Log("Game Quit.");
-    }
 }
