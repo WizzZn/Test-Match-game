@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
     private int firstGuessIntex, secondGuessIntex;
     private string firstGussePuzzle, secondGussePuzzle;
     private bool winbool;
-   
+    //private bool facedUp;
 
     // Start is called before the first frame update
     private void Awake()
@@ -71,9 +71,10 @@ public class GameManager : MonoBehaviour
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-            btns[i].image.sprite = gamepuzzle[i];
-            audioSource.clip = flipSFX;
-            audioSource.Play();
+            //btns[i].image.sprite = gamepuzzle[i];
+            StartCoroutine(RotateCard(btns[i], gamepuzzle[i],false));
+           /* audioSource.clip = flipSFX;
+            audioSource.Play();*/
         }
 
         yield return new WaitForSeconds(2f);
@@ -114,7 +115,8 @@ public class GameManager : MonoBehaviour
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-            btns[i].image.sprite = bgSprite;
+           // btns[i].image.sprite = bgSprite;
+            StartCoroutine(RotateCard(btns[i], gamepuzzle[i], true));
             audioSource.clip = flipSFX;
             audioSource.Play();
         }
@@ -129,7 +131,8 @@ public class GameManager : MonoBehaviour
             firstGussePuzzle = gamepuzzle[firstGuessIntex].name;
             audioSource.clip = flipSFX;
             audioSource.Play();
-            btns[firstGuessIntex].image.sprite = gamepuzzle[firstGuessIntex];
+            //btns[firstGuessIntex].image.sprite = gamepuzzle[firstGuessIntex];
+            StartCoroutine(RotateCard(btns[firstGuessIntex], gamepuzzle[firstGuessIntex], false));
         }
         else if (!secondTry)
         {
@@ -138,8 +141,8 @@ public class GameManager : MonoBehaviour
             secondGussePuzzle = gamepuzzle[secondGuessIntex].name;
             audioSource.clip = flipSFX;
             audioSource.Play();
-            btns[secondGuessIntex].image.sprite = gamepuzzle[secondGuessIntex];
-
+            //btns[secondGuessIntex].image.sprite = gamepuzzle[secondGuessIntex];
+            StartCoroutine(RotateCard(btns[secondGuessIntex], gamepuzzle[secondGuessIntex], false));
 
             if (firstGuessIntex == secondGuessIntex)
             {
@@ -184,8 +187,10 @@ public class GameManager : MonoBehaviour
                     comboFoundCheck();
                 }
                 firstTry = secondTry = false;
-                btns[firstGuessIntex].image.sprite = bgSprite;
-                btns[secondGuessIntex].image.sprite = bgSprite;
+                StartCoroutine(RotateCard(btns[firstGuessIntex], gamepuzzle[firstGuessIntex], true));
+                StartCoroutine(RotateCard(btns[secondGuessIntex], gamepuzzle[secondGuessIntex], true));
+                /*btns[firstGuessIntex].image.sprite = bgSprite;
+                btns[secondGuessIntex].image.sprite = bgSprite;*/
                 checkguesses();
             }
         }
@@ -255,6 +260,36 @@ public class GameManager : MonoBehaviour
         gameOverPanel.SetActive(true); 
 
     }
+    private IEnumerator RotateCard(Button buttons,Sprite cardPuzzle,bool facedUp)
+    {
+
+        if (!facedUp)
+        {
+            for (float j = 0f; j <= 180f; j += 10f)
+            {
+                buttons.transform.rotation = Quaternion.Euler(0f, j, 0f);
+                if (j == 90f)
+                {
+                    buttons.image.sprite = cardPuzzle;
+                }
+                yield return new WaitForSeconds(0.01f);
+            }
+        }
+
+        else if (facedUp)
+        {
+            for (float j = 180f; j >= 0f; j -= 10f)
+            {
+                buttons.transform.rotation = Quaternion.Euler(0f, j, 0f);
+                if (j == 90f)
+                {
+                    buttons.image.sprite = bgSprite;
+                }
+                yield return new WaitForSeconds(0.01f);
+            }
+        }
+    }
+
     void SAVE()
     {
         GameData.instance.level = SceneManager.GetActiveScene().buildIndex;

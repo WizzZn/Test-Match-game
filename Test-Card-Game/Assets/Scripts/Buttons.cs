@@ -47,4 +47,18 @@ public class Buttons : MonoBehaviour
         GameManager.instance.gameOverPanel.SetActive(false);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+    public void Easy()
+    {
+        SceneManager.LoadScene("Level_2x2");
+    }
+    public void Medium()
+    {
+        SceneManager.LoadScene("Level_2x3");
+
+    }
+    public void Hard()
+    {
+        SceneManager.LoadScene("Level_5x6");
+
+    }
 }
