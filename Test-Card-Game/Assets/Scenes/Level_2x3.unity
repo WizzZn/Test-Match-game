@@ -854,8 +854,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 1482773757}
-  gridRow: 4
-  bgSprite: {fileID: 21300000, guid: 89109c6e7e0c8be4490bcbf40f5a5b20, type: 3}
+  gridRow: 3
+  bgSprite: {fileID: 21300000, guid: dc9b1f8498466fd41a696d9d08ed0b43, type: 3}
   scoreText: {fileID: 922141995}
   comboText: {fileID: 79710930}
   chanceText: {fileID: 173198577}
@@ -882,7 +882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5439156d34115bd4aa2bc7227836c6b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalCards: 8
+  totalCards: 6
   cardParent: {fileID: 1482773756}
   cardPrefab: {fileID: 5746273954176275334, guid: 3aa944546d0fe9e4b90eb4fe01b62cc3, type: 3}
 --- !u!4 &741222388

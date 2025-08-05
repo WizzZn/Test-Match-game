@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro;
 using System.Runtime.InteropServices;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+//using UnityEngine.UIElements;
 
 public class GameManager : MonoBehaviour
 {
@@ -36,6 +37,7 @@ public class GameManager : MonoBehaviour
     private int firstGuessIntex, secondGuessIntex;
     private string firstGussePuzzle, secondGussePuzzle;
     private bool winbool;
+
     //private bool facedUp;
 
     // Start is called before the first frame update
@@ -71,10 +73,9 @@ public class GameManager : MonoBehaviour
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-            //btns[i].image.sprite = gamepuzzle[i];
+            audioSource.clip = flipSFX;
+            audioSource.Play();
             StartCoroutine(RotateCard(btns[i], gamepuzzle[i],false));
-           /* audioSource.clip = flipSFX;
-            audioSource.Play();*/
         }
 
         yield return new WaitForSeconds(2f);
@@ -115,10 +116,9 @@ public class GameManager : MonoBehaviour
         GameObject[] buttons = GameObject.FindGameObjectsWithTag("Cards");
         for (int i = 0; i < buttons.Length; i++)
         {
-           // btns[i].image.sprite = bgSprite;
-            StartCoroutine(RotateCard(btns[i], gamepuzzle[i], true));
             audioSource.clip = flipSFX;
             audioSource.Play();
+            StartCoroutine(RotateCard(btns[i], gamepuzzle[i], true));
         }
 
     }
@@ -131,27 +131,26 @@ public class GameManager : MonoBehaviour
             firstGussePuzzle = gamepuzzle[firstGuessIntex].name;
             audioSource.clip = flipSFX;
             audioSource.Play();
-            //btns[firstGuessIntex].image.sprite = gamepuzzle[firstGuessIntex];
             StartCoroutine(RotateCard(btns[firstGuessIntex], gamepuzzle[firstGuessIntex], false));
         }
         else if (!secondTry)
         {
-            secondTry = true;
             secondGuessIntex = int.Parse(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.name);
-            secondGussePuzzle = gamepuzzle[secondGuessIntex].name;
-            audioSource.clip = flipSFX;
-            audioSource.Play();
-            //btns[secondGuessIntex].image.sprite = gamepuzzle[secondGuessIntex];
-            StartCoroutine(RotateCard(btns[secondGuessIntex], gamepuzzle[secondGuessIntex], false));
-
             if (firstGuessIntex == secondGuessIntex)
             {
                 Debug.Log("You can't pick the same card twice");
-                secondTry = false;
                 audioSource.clip = wrrongSFX;
                 audioSource.Play();
                 return;
             }
+            secondTry = true;
+            secondGussePuzzle = gamepuzzle[secondGuessIntex].name;
+            audioSource.clip = flipSFX;
+            audioSource.Play();
+
+
+            StartCoroutine(RotateCard(btns[secondGuessIntex], gamepuzzle[secondGuessIntex], false));
+
             StartCoroutine(CardsChecking());
 
             IEnumerator CardsChecking()
@@ -189,8 +188,6 @@ public class GameManager : MonoBehaviour
                 firstTry = secondTry = false;
                 StartCoroutine(RotateCard(btns[firstGuessIntex], gamepuzzle[firstGuessIntex], true));
                 StartCoroutine(RotateCard(btns[secondGuessIntex], gamepuzzle[secondGuessIntex], true));
-                /*btns[firstGuessIntex].image.sprite = bgSprite;
-                btns[secondGuessIntex].image.sprite = bgSprite;*/
                 checkguesses();
             }
         }
@@ -262,32 +259,27 @@ public class GameManager : MonoBehaviour
     }
     private IEnumerator RotateCard(Button buttons,Sprite cardPuzzle,bool facedUp)
     {
+        Vector3 originalScale = Vector3.one;
+        Vector3 flippedScale = new Vector3(0f, originalScale.y, originalScale.z);
 
-        if (!facedUp)
+        // Shrink to 0 (flip start)
+        for (float t = 0f; t <= 1f; t += 0.1f)
         {
-            for (float j = 0f; j <= 180f; j += 10f)
-            {
-                buttons.transform.rotation = Quaternion.Euler(0f, j, 0f);
-                if (j == 90f)
-                {
-                    buttons.image.sprite = cardPuzzle;
-                }
-                yield return new WaitForSeconds(0.01f);
-            }
+            buttons.transform.localScale = Vector3.Lerp(originalScale, flippedScale, t);
+            yield return new WaitForSeconds(0.01f);
         }
 
-        else if (facedUp)
+        // Switch sprite at flip point
+        buttons.image.sprite = facedUp ? bgSprite : cardPuzzle;
+
+        // Flip back to full scale
+        for (float t = 0f; t <= 1f; t += 0.1f)
         {
-            for (float j = 180f; j >= 0f; j -= 10f)
-            {
-                buttons.transform.rotation = Quaternion.Euler(0f, j, 0f);
-                if (j == 90f)
-                {
-                    buttons.image.sprite = bgSprite;
-                }
-                yield return new WaitForSeconds(0.01f);
-            }
+            buttons.transform.localScale = Vector3.Lerp(flippedScale, originalScale, t);
+            yield return new WaitForSeconds(0.01f);
         }
+
+        buttons.transform.localScale = originalScale;
     }
 
     void SAVE()

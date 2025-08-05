@@ -855,7 +855,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grid: {fileID: 1482773757}
   gridRow: 6
-  bgSprite: {fileID: 21300000, guid: 89109c6e7e0c8be4490bcbf40f5a5b20, type: 3}
+  bgSprite: {fileID: 21300000, guid: f16d952e953cd1c40920fc79de047ae2, type: 3}
   scoreText: {fileID: 922141995}
   comboText: {fileID: 79710930}
   chanceText: {fileID: 173198577}

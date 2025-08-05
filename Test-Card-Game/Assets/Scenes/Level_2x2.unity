@@ -855,7 +855,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grid: {fileID: 1482773757}
   gridRow: 2
-  bgSprite: {fileID: 21300000, guid: 89109c6e7e0c8be4490bcbf40f5a5b20, type: 3}
+  bgSprite: {fileID: 21300000, guid: 5c02744b28992254a905ee41550e7a60, type: 3}
   scoreText: {fileID: 922141995}
   comboText: {fileID: 79710930}
   chanceText: {fileID: 173198577}
@@ -1437,7 +1437,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1280, y: 720}
+  m_ReferenceResolution: {x: 1290, y: 720}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
